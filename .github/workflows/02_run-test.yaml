@@ -6,6 +6,13 @@ on:
             - "**"
     pull_request:
 
+permissions:
+    id-token: write
+    contents: read
+    statuses: write
+    checks: write
+    pull-requests: write
+
 jobs:
     test:
         runs-on: ubuntu-latest
@@ -25,6 +32,14 @@ jobs:
               run: |
                   mkdir -p reports
                   npm test -- --reporter=default --reporter=junit --outputFile.junit=reports/vitest-junit.xml
+            
+            - name: Render Test Report to GitHub PR
+              uses: dorny/test-reporter@v1
+              if: always() # 確保測試失敗時也能把精美的錯誤圖表畫出來
+              with:
+                  name: Vitest Test Results
+                  path: reports/vitest-junit.xml 
+                  reporter: jest-junit
 
             - name: Upload test report artifact
               if: always()
